@@ -2,8 +2,6 @@ import datetime
 
 from apscheduler.schedulers.background import BackgroundScheduler
 
-from salbot import utils
-
 class ScheduledJob:
     def __init__(self, job):
         self.job = job
@@ -68,6 +66,19 @@ class ScheduleManager:
 
     @staticmethod
     def execute_interval(interval, function, args=[], kwargs={}, scheduler=None, jitter=None):
-        if scheduler is None: 
-            scheduler
-            
+        if scheduler is None:
+            scheduler = ScheduleManager.n_scheduler
+
+        if n_scheduler is None:
+            raise ValueError("No Scheduler available")
+
+        job = scheduler.add_job(
+            function,
+            "interval",
+            seconds=interval,
+            args=args,
+            kwargs=kwargs,
+            jitter=jitter
+        )
+
+        return ScheduledJob(job)
