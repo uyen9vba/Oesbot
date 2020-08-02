@@ -5,16 +5,19 @@ import re
 import sys
 import urllib
 import random
+import abc
 
 import irc.client
 import requests
 
-import managers.scheduler import ScheduleManager
+import src.managers.scheduler import ScheduleManager
+import src.managers.database import DatabaseManager
 
 class Bot:
+    @abstractmethod
     def __init__(self, config, args):
-        self.config = config
-        self.args = args
+        pass
 
-        ScheduleManager.init()
-
+    @property
+    def password(self):
+        return f"oauth:{self.token_manager.token.access_token}"

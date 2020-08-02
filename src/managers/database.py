@@ -1,5 +1,6 @@
 import logging
 
+from psycopg2.extensions import STATUS_IN_TRANSACTION
 from contextlib import contextmanager
 from sqlalchemy import create_engine
 from sqlalchemy import event
@@ -12,9 +13,9 @@ from static import globals
 logger = logging.getLogger("salbot")
 
 class DatabaseManager:
-    n_engine = None
-    n_session = None
-    n_scoped_session = None
+    engine = None
+    session = None
+    scoped_session = None
 
     @staticmethod
     def init(url):
@@ -23,19 +24,19 @@ class DatabaseManager:
             pool_pre_ping=True,
             pool_size=10,
             max_overflow=20)
-        DatabaseManager.n_session = sessionmaker(
-            bind=DatabaseManager.n_engine, 
+        DatabaseManager.session = sessionmaker(
+            bind=DatabaseManager.engine, 
             autoflush=False
         )
-        DatabaseManager.n_scoped_session= scoped_session(sessionmaker(bing=DatabaseManager.n_engine))
+        DatabaseManager.scoped_session= scoped_session(sessionmaker(bing=DatabaseManager.engine))
 
     @staticmethod
     def create_session(**options):
-        return DatabaseManager.n_session(**options)
+        return DatabaseManager.session(**options)
 
     @staticmethod
     def create_scoped_session(*options):
-        return DatabaseManager.n_scoped_session(**options)
+        return DatabaseManager.scoped_session(**options)
 
     @staticmethod
     def session_add_expunge(db_object, **options):
@@ -57,5 +58,23 @@ class DatabaseManager:
     @staticmethod
     @contextmanager
     def create_dbapi_connection(autocommit=False):
-        
+        pool_connection = DatabaseManager.engine.raw_connection()
 
+        connection = pool_connection.connection
+
+        try:
+            if autocommit:
+                if connection.status == STATUS_IN_TRANSACTION:
+                    connection.rollback()
+
+                connection.autocommit = True
+            try:
+                yield connection
+            finally:
+                if connection.status == STATUS_IN_TRANSACTION:
+                    connection.rollback()
+        finally:
+            if autocommit:
+                connection.autocommit = False
+
+            pool_connection.close()
