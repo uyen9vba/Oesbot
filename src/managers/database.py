@@ -13,37 +13,38 @@ from static import globals
 logger = logging.getLogger("salbot")
 
 class DatabaseManager:
-    engine = None
-    session = None
-    scoped_session = None
+    def __init__(self):
+        self.engine = None
+        self.session = None
+        self.scoped_session = None
 
     @staticmethod
     def init(url):
-        DatabaseManager.engine = create_engine(
+        self.engine = create_engine(
             url,
             pool_pre_ping=True,
             pool_size=10,
             max_overflow=20)
-        DatabaseManager.session = sessionmaker(
-            bind=DatabaseManager.engine, 
+        self.session = sessionmaker(
+            bind=self.engine, 
             autoflush=False
         )
-        DatabaseManager.scoped_session= scoped_session(sessionmaker(bing=DatabaseManager.engine))
+        self.scoped_session= scoped_session(sessionmaker(bing=self.engine))
 
     @staticmethod
     def create_session(**options):
-        return DatabaseManager.session(**options)
+        return self.session(**options)
 
     @staticmethod
     def create_scoped_session(*options):
-        return DatabaseManager.scoped_session(**options)
+        return self.scoped_session(**options)
 
     @staticmethod
     def session_add_expunge(db_object, **options):
         if "expire_on_commit" not in options:
             options["expire_on_commit"] = False 
 
-        session = DatabaseManager.create_session(**options)
+        session = self.create_session(**options)
 
         try:
             session.add(db_object)
@@ -58,7 +59,7 @@ class DatabaseManager:
     @staticmethod
     @contextmanager
     def create_dbapi_connection(autocommit=False):
-        pool_connection = DatabaseManager.engine.raw_connection()
+        pool_connection = self.engine.raw_connection()
 
         connection = pool_connection.connection
 

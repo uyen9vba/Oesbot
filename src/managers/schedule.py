@@ -20,18 +20,18 @@ class ScheduledJob:
 
 
 class ScheduleManager:
-    n_scheduler = None
-
+    def __init__(self, scheduler):
+        self.scheduler = scheduler
+    
     @staticmethod
     def init():
-        if not ScheduleManager.scheduler:
-            ScheduleManager.scheduler = BackgroundScheduler(daemon=True)
-            ScheduleManager.scheduler.start()
+        self.scheduler = BackgroundScheduler(daemon=True)
+        self.scheduler.start()
 
     @staticmethod
     def execute(function, args=[], kwargs={}, scheduler=None):
         if scheduler is None:
-            scheduler = ScheduleManager.n_scheduler
+            scheduler = self.scheduler
 
         if scheduler is None:
             raise ValueError("No scheduler available")
@@ -49,7 +49,7 @@ class ScheduleManager:
     @staticmethod
     def execute_delayed(delay, function, args=[], kwargs{}, scheduler=None):
         if scheduler is None:
-            scheduler = ScheduleManager.n_scheduler
+            scheduler = self.scheduler
 
         if scheduler is None: 
             raise ValueError("No scheduler available")
@@ -67,9 +67,9 @@ class ScheduleManager:
     @staticmethod
     def execute_interval(interval, function, args=[], kwargs={}, scheduler=None, jitter=None):
         if scheduler is None:
-            scheduler = ScheduleManager.n_scheduler
+            scheduler = self.scheduler
 
-        if n_scheduler is None:
+        if scheduler is None:
             raise ValueError("No Scheduler available")
 
         job = scheduler.add_job(

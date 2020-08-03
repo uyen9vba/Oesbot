@@ -10,13 +10,13 @@ import abc
 import irc.client
 import requests
 
-import src.managers.scheduler import ScheduleManager
+import src.managers.schedule import ScheduleManager
 import src.managers.database import DatabaseManager
 
 class Bot:
-    @abstractmethod
     def __init__(self, config, args):
-        pass
+        self.config = config
+        self.args = args
 
     @property
     def password(self):
