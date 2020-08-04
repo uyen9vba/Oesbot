@@ -35,9 +35,12 @@ class Salbot(Bot):
 
         self.nickname = self.config["config"].get("nickname", "salbot")
 
+        #TMI Constraints
         if self.config["config"].getBoolean("verified", False):
             self.tmi_constraints = TMIConstraints.verified
         elif self.config["config"].getBoolean("known", False):
             self.tmi_constraints = TMIConstraints.known
         else:
             self.tmi_constraints = TMIConstraints.moderator
+
+        
