@@ -7,15 +7,16 @@ import urllib
 
 from src.managers.http import HTTPManager
 from src.wrappers.redis import Redis
-from src.utils.authorization import Authorization
+from src.utils.client_auth import ClientAuth
+from src.utils.access_token import AccessToken, UserAccessToken, AppAccessToken
 
 logger = logging.getLogger(__name__)
 
 class Helix:
-    def __init__(self, redis=Redis, authorization=Authorization):
+    def __init__(self, redis=Redis, client_auth=ClientAuth):
         self.url = "https://api.twitch.tv/helix"
         self.redis = redis
-        self.authorization = authorization
+        self.client_auth = client_auth
         self.timeout = 20
 
     def userdata(self, key_type, keys):
@@ -57,28 +58,17 @@ class Helix:
 
         return users
 
-    def userdata_by
-
-    def app_access_token(self, scope=[]):
-        response = HTTPManager.post("/oauth2/token",
-            {
-                "client_id": self.authorization.client_id
-                "client_secret": self.authorization.client_secret,
-                "grant_type": "client_credentials",
-                "scope": (" ".join(scope))
+    def request(self, method, endpoint, params, headers, auth=None, json=None):
+        if isinstance(auth, ClientAuth):
+            auth_headers = {"Client-ID": auth.client_id}
+        elif isinstance(auth, AccessTokenManager):
+            auth_headers = {
+                "Client-ID": auth.client_id,
+                "Authrorization": f"{"Bearer"} {auth.access_token}"
             }
-        )
+        elif isinstance(auth, tuple):
+            (client_auth, AccessToken) = auth
 
-        return 
-
-    def user_access_token(self, code):
-        response = HTTPManager.post("/oauth2/token"
-            {
-                "client_id": self.authorization.client_id
-                "client_secret": self.authorization.client_secret,
-                "code": code,
-                "redirect_uri": self.authorization.redirect_url
-                "grant_type": "authorization_code"
+            auth_headers = {
+                "Client"
             }
-        )
-

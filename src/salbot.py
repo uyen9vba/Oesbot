@@ -9,7 +9,7 @@ import random
 import irc.client
 import requests
 
-import src.managers.scheduler import ScheduleManager
+import src.managers.schedule import ScheduleManager
 import src.managers.database import DatabaseManager
 import src.managers.tmi_constraints import TMIConstraints
 import src.bot import Bot
@@ -28,12 +28,13 @@ class Salbot(Bot):
 
     def init(self):
         self.phrases = self.config["phrases"]
+        self.nickname = self.config["config"].get("nickname", "salbot")
 
         ScheduleManager.init()
 
         DatabaseManager.init(self.config["config"]["database"])
 
-        self.nickname = self.config["config"].get("nickname", "salbot")
+        
 
         #TMI Constraints
         if self.config["config"].getBoolean("verified", False):
