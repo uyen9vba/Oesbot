@@ -24,21 +24,22 @@ class RedisManager:
     def publish(cls, channel, message):
         cls.redis.publish(channel, message)
 
-    def cache(self, key, method, expiry=120, force=False):
+    def cache(self, redis_key, method, expiry=120, force=False):
         if not force:
             cache = self.redis.get(key)
             if cache is not None:
                 return json.loads(cache)
 
         logger.debug("Cache Miss: %s", key)
+        results = method()
 
         if callable(expiry):
-            expiry = expiry(method())
+            expiry = expiry(results)
 
         if expiry > 0:
-            self.redis.setex(key, expiry, json.dumps(method()))
+            self.redis.setex(key, expiry, json.dumps(results))
         
-        return method()
+        return results
 
     def cache_batch(self, data, redis_method, method, expiry=120, force=False):
         results = []
@@ -77,8 +78,8 @@ class RedisManager:
         return results
 
 class RedisTokenStorage:
-    def __init__(self, redis, cls, redis_key, expire):
-        self.redis = redis,
+    def __init__(self, RedisManager, redis_key, expire):
+        self.redis = RedisManager,
         self.redis_key = redis_key,
         self.expire = expire
 
@@ -88,7 +89,7 @@ class RedisTokenStorage:
         if cache is None:
             return None
 
-        return AccessToken.cls_from_json(json.loads(cache))
+        return AccessToken.get_from_json(json.loads(cache))
 
     def save(self, token):
         if self.expire:

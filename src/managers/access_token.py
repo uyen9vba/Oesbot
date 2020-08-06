@@ -2,23 +2,47 @@ import datetime
 
 from abc import abstractmethod
 
-from src.wrappers.redis import RedisTokenStorage
+from src.wrappers.redis import RedisManager, RedisTokenStorage
 
 class AccessTokenManager(ABC):
     def __init__(self, RedisTokenStorage=None, AccessToken=None):
         self.storage = RedisTokenStorage
         self.token = AccessToken
 
+    '''
     def init(self):
         token = self.storage.load()
 
-        if 
+        if token is not None:
+            logger.debug("Successfully loaded OAuth token from storage")
+            self.token = token
+        else:
+            if isinstance(AccessToken, AppAccessToken):
+                self.token.get(self)
+    '''
 
     def refresh(self):
         logger.debug("Refreshing OAuth token")
         new_token = self.token.refresh()
         self.save(new_token)
         self.token = new_token
+
+class AppAccessTokenManager(AccessTokenManager):
+    def __init__(self, RedisManager, ClientAuth, scope[], AccessToken=None):
+        redis_key = f"authentication:app-access-token:{ClientAuth.client_id}:{json.dumps(scope)}"
+        storage = RedisTokenStorage(RedisManager, redis_key, expire=True)
+
+        super().__init__(storage, AccessToken)
+        self.scope = scope
+
+class UserAccessTokenManager(AccessTokenManager):
+    def __init__(self, RedisManager, username, user_id, AccessToken=None):
+        redis_key = f"authentication:user-access-token:{user_id}"
+        storage = RedisTokenStorage(RedisManager, redis_key, expire=True)
+
+        super().__init__(storage, AccessToken)
+        self.username = username
+        self.user_id = user_id
 
 class AccessToken(ABC):
     def __init__(self, access_token, created_at, expires_in, token_type, refresh_token, scope):
@@ -29,6 +53,7 @@ class AccessToken(ABC):
         self.refresh_token = refresh_token
         self.scope = scope
         self.token_refresh_threshold
+        self.url = "https://id.twitch.tv"
         
         if expires_in is not None:
             self.expires_at = self.created_at + self.expires_in
@@ -70,7 +95,7 @@ class AccessToken(ABC):
         }
 
     @classmethod
-    def cls_from_json(cls, json):
+    def get_from_json(cls, json):
         if json["expires_in"] is None:
             expires_in = None
         else:
@@ -111,7 +136,7 @@ class UserAccessToken(AccessToken):
     def can_refresh(self):
         return self.refresh_token is not None
 
-    def refresh(self, refresh_token):
+    def refresh(self, ClientAuth, refresh_token):
         if not UserAccessToken.can_refresh():
             raise ValueError("This user access token has no refresh token")
 
@@ -119,8 +144,8 @@ class UserAccessToken(AccessToken):
             "/oauth2/token",
             self.url,
             {
-                "client_id": self.client_auth.client_id,
-                "client_secret": self.client_auth.client_secret,
+                "client_id": self.ClientAuth.client_id,
+                "client_secret": self.ClientAuth.client_secret,
                 "grant_type": "refresh_token",
                 "refresh_token": refresh_token
             }
@@ -136,15 +161,15 @@ class UserAccessToken(AccessToken):
         )
 
 
-    def get(self, url, code):
+    def get(self, ClientAuth, code):
         response = HTTPManager.post(
             "/oauth2/token",
-            url,
+            self.url,
             {
-                "client_id": self.client_auth.client_id
-                "client_secret": self.client_auth.client_secret,
+                "client_id": self.ClientAuth.client_id
+                "client_secret": self.ClientAuth.client_secret,
                 "code": code,
-                "redirect_uri": self.client_auth.redirect_url
+                "redirect_uri": self.ClientAuth.redirect_url
                 "grant_type": "authorization_code"
             }
         )
@@ -166,13 +191,13 @@ class AppAccessToken(AccessToken):
     def refresh(self):
         return self.get(self.scope)
 
-    def get(self, url, scope=[]):
+    def get(self, ClientAuth, scope=[]):
         response = HTTPManager.post(
             "/oauth2/token",
-            url,
+            self.url,
             {
-                "client_id": self.client_auth.client_id
-                "client_secret": self.client_auth.client_secret,
+                "client_id": self.ClientAuth.client_id
+                "client_secret": self.ClientAuth.client_secret,
                 "grant_type": "client_credentials",
                 "scope": (" ".join(scope))
             }
