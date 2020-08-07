@@ -13,13 +13,8 @@ from static import globals
 logger = logging.getLogger("salbot")
 
 class DatabaseManager:
-    def __init__(self):
-        self.engine = None
-        self.session = None
-        self.scoped_session = None
-
     @staticmethod
-    def init(url):
+    def __init__(url):
         self.engine = create_engine(
             url,
             pool_pre_ping=True,

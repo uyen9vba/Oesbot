@@ -46,7 +46,7 @@ class RedisManager:
         pending = []
 
         if not force:
-            cache = self.redis.mget([redis_method(entry) for entry in data])
+            cache = self.redis.mget([redis_method(a) for a in data])
             
             for index, a in enumerate(cache):
                 if a is not None:
