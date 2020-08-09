@@ -21,3 +21,6 @@ class Bot:
     @property
     def password(self):
         return f"oauth:{self.token_manager.token.access_token}"
+
+    def execute_delayed(self, delay, method, *args, **kwargs):
+        self.scheduler.execute_after

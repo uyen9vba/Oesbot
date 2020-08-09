@@ -8,3 +8,4 @@ tweepy==3.9.0
 APScheduler==3.6.3
 psycopg2==2.8.5
 redis==3.5.3
+tempora==4.0.0

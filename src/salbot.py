@@ -11,15 +11,15 @@ import requests
 
 import src.managers.schedule import ScheduleManager
 import src.managers.database import DatabaseManager
-import src.managers.tmi_constraints import TMIConstraints
+import src.managers.tmi_status import TMIConstraints
 import src.bot import Bot
 
 class Salbot(Bot):
     """
     config = None
     args = None
-    nickname = None
-    tmi_constraints = None
+    name = None
+    tmi_status = None
     phrases = None
     channel = None
     streamer = None 
@@ -28,20 +28,18 @@ class Salbot(Bot):
 
     def init(self):
         self.phrases = self.config["phrases"]
-        self.nickname = self.config["config"].get("nickname", "salbot")
+        self.name = self.config["config"].get("name", "salbot")
 
         ScheduleManager.init()
 
         DatabaseManager.init(self.config["config"]["database"])
 
-        
-
         #TMI Constraints
         if self.config["config"].getBoolean("verified", False):
-            self.tmi_constraints = TMIConstraints.verified
+            self.tmi_status = TMIStatus.verified
         elif self.config["config"].getBoolean("known", False):
-            self.tmi_constraints = TMIConstraints.known
+            self.tmi_status = TMIStatus.known
         else:
-            self.tmi_constraints = TMIConstraints.moderator
+            self.tmi_status = TMIStatus.moderator
 
         

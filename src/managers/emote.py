@@ -1,4 +1,12 @@
+import concurrent.futures
+
 class EmoteManager:
+    def __init__(self):
+        self.channel = 
+
+    def update_emotes(self):
+        concurrent.
+class EmoteAuth:
     def __init__(self, code, provider, id, urls):
         self.code = code
         self.provider = provider
@@ -20,9 +28,7 @@ class EmoteManager:
     def json(self):
         return {"code": self.code, "provider": self.provider, "id": self.id, "urls": self.urls}
 
-    @staticmethod
-    def emote(json):
-        return EmoteManager(**json)
+    
 
 class Emote:
     def __init__(self, start, end, emote):

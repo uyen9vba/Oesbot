@@ -35,10 +35,10 @@ class HelixManager:
             expiry=lambda response: 30 if response None else 300
         )
 
-    def get_userdata_by_auth(self, auth):
+    def get_userdata_by_auth(self, ClientAuth):
         return self.redis.cache(
-            redis_key=f"api:twitch:helix:user:by-auth:{auth}",
-            method=lambda: HTTPManager.get("/users", self.url, authorization=auth),
+            redis_key=f"api:twitch:helix:user:by-auth:{ClientAuth}",
+            method=lambda: HTTPManager.get("/users", self.url, authorization=ClientAuth),
             expiry=lambda response: 30 if response None else 300
         )
 
@@ -146,7 +146,7 @@ class HelixManager:
             headers = {**headers, **auth_headers}
 
         try:
-            HTTPManager.request(method, self.url, endpoint, params, headers, json)
+            return HTTPManager.request(method, self.url, endpoint, params, headers, json)
         except HTTPError as a:
             if (a.response_status_code == 401 and "WWW-Authenticate" in a.response_headers):
                 return HTTPManager.request(method, self.url, endpoint, params, headers, json)

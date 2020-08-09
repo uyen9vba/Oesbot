@@ -5,6 +5,8 @@ import sqlalchemy
 
 from contextlib import contextmanager
 
+from src.wrappers.helix import HelixManager
+
 Base = sqlalchemy.ext.declarative_base()
 
 class UserAuth(Base):
@@ -14,12 +16,41 @@ class UserAuth(Base):
         self.name = name
 
     def json(self):
-        return {
-            "id": self.id_,
-            "login": self.login,
-            "name": self.name
-        }
+        return {"id": self.id_, "login": self.login, "name": self.name}
+    
+    def get_by_login(self, login):
+        userdata = HelixManager.get_userdata_by_login(login)
+
+        if userdata is None:
+            return None
+
+        return UserAuth(userdata["id"], userdata["login"], userdata["display_name"])
         
+    def get_by_auth(self, ClientAuth):
+        userdata = HelixManager.get_userdata_by_auth(ClientAuth)
+
+        return UserAuth(userdata["id"], userdata["login"], userdata["display_name"])
+
+    def get_userauths_by_id(self, ids):
+        userdatas = HelixManager.get_userdatas_by_id(ids)
+
+        return [
+            UserAuth(userdata["id"], userdata["login"], userdata["display_name"])
+            if userdata is not None
+            else None
+            for userdata in userdatas
+        ]
+
+    def get_userauths_by_login(self, logins):
+        userdatas = HelixManager.get_userdatas_by_login(logins)
+
+        return [
+            UserAuth(userdata["id"], userdata["login"], userdata["display_name"])
+            if userdata is not None
+            else None
+            for userdata in userdatas
+        ]
+
 class User(Base):
     __tablename__ = "user"
 
@@ -112,8 +143,26 @@ class User(Base):
         }
 
     @staticmethod
-    def create(session, id, login, name):
-        user = User(id=id, login=login, name=name)
-        session.add(user)
+    def create(Session, UserAuth):
+        user_found = Session.query(User).filter_by(id=UserAuth.id_).one_or_none()
+        
+        if user_found is not None:
+            user_found.login = UserAuth.login
+            user_found.name = UserAuth.name
+
+            return user_found
+        
+        user = User(id=UserAuth.id_, login=UserAuth.login, name=UserAuth.name)
+        Session.add(user)
         
         return user
+
+    def query_by_login(Session, login):
+        user_found = (
+            Session.query(User).filter_by(login=login).order_by(User.login_last_updated.desc()).one_or_none()
+        )
+
+        return user_found
+
+    def query_by_id(Session, id):
+        return Session.query(User).filter_by(id=id).one_or_none()

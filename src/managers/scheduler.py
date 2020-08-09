@@ -1,31 +1,23 @@
 import datetime
+import logging
 
-from apscheduler.schedulers.background import BackgroundScheduler
+import irc
+import apscheduler
+import tempora
 
-class ScheduledJob:
-    def __init__(self, job):
-        self.job = job
+class Scheduler(tempora.schedule.Scheduler, irc.schedule.IScheduler):
+    def execute(self, method):
+        self.add(tempora.schedule.InvokeScheduler(method))
 
-    def pause(self, *args, **kwargs):
-        if self.job:
-            self.job.pause(*args, **kwargs)
+    def execute_delayed(self, delay, method):
+        self.add(tempora.schedule.DelayedCommand.after(delay, method))
 
-    def resume(self, *args, **kwargs):
-        if self.job:
-            self.job.resume(*args, **kwargs)
+    def execute_interval(self, period, method):
+        self.add(tempora.schedule.PeriodicCommand.after(period, method))
 
-    def remove(self, *args, **kwargs):
-        if self.job:
-            self.job.remove(*args, **kwargs)
-
-
-class ScheduleManager:
-    def __init__(self, scheduler):
-        self.scheduler = scheduler
-    
-    @staticmethod
-    def init():
-        self.scheduler = BackgroundScheduler(daemon=True)
+class BackgroundScheduler:
+    def __init__(self):
+        self.scheduler = apscheduler.schedulers.background.BackgroundScheduler(daemon=True)
         self.scheduler.start()
 
     @staticmethod
@@ -82,3 +74,19 @@ class ScheduleManager:
         )
 
         return ScheduledJob(job)
+
+class ScheduledJob:
+    def __init__(self, job):
+        self.job = job
+
+    def pause(self, *args, **kwargs):
+        if self.job:
+            self.job.pause(*args, **kwargs)
+
+    def resume(self, *args, **kwargs):
+        if self.job:
+            self.job.resume(*args, **kwargs)
+
+    def remove(self, *args, **kwargs):
+        if self.job:
+            self.job.remove(*args, **kwargs)
