@@ -2,14 +2,13 @@ import collections
 
 import sqlalchemy
 
-import managers.database
 from static.static import declarative_meta
 
 
 class CommandManager(collections.UserDict):
-    def __init__(self):
+    def __init__(self, DatabaseManager):
         collections.UserDict.__init__(self)
-        self.database_session = DatabaseManager.create_session()
+        self.database_session = DatabaseManager.session()
         self.internal_commands = {Command.quit}
         self.database_commands = {}
 

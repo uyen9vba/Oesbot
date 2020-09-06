@@ -12,6 +12,7 @@ from managers.irc_ import IRCManager
 from managers.command import CommandManager
 from managers.phrase import PhraseManager
 from managers.access_token import UserAccessTokenManager
+from managers.http import HTTPManager
 from wrappers.helix import HelixWrapper
 from wrappers.redis import RedisWrapper
 from utilities.client_auth import ClientAuth
@@ -40,13 +41,18 @@ class Bot:
         else:
             self.tmi_status = TMIStatus.moderator
 
-        self.scheduler = Scheduler()
+        HTTPManager.init()
+        Scheduler.init()
+        BackgroundScheduler.init()
+
+        self.database_manager = DatabaseManager(url=self.api.get("database"))
         self.background_scheduler = BackgroundScheduler()
         self.redis_wrapper = RedisWrapper()
         self.helix_wrapper = HelixWrapper(
             url=self.api.get("helix"),
             config=self.config,
-            RedisWrapper=self.redis_wrapper
+            RedisWrapper=self.redis_wrapper,
+            ClientAuth=self.client_auth
         )
 
         self.bot_userdata = self.helix_wrapper.get_userdata_by_login(self.config.get("name"))
@@ -59,8 +65,8 @@ class Bot:
         )
 
         self.irc_manager = IRCManager(self)
-        self.command_manager = CommandManager()
-        self.phrase_manager = PhraseManager()
+        self.command_manager = CommandManager(self.database_manager)
+        self.phrase_manager = PhraseManager(self.database_manager)
 
         if self.channel_userdata["id"] is None:
             raise ValueError("Config: channel name not found on https://api.twitch.tv/helix")

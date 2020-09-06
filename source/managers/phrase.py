@@ -2,11 +2,11 @@ import sqlalchemy
 import re
 
 from static.static import declarative_meta
-from managers.database import DatabaseManager
+
 
 class PhraseManager:
-    def __init__(self):
-        self.database_session = DatabaseManager.create_session(expire_on_commit=False)
+    def __init__(self, DatabaseManager):
+        self.database_session = DatabaseManager.session(expire_on_commit=False)
         self.phrases = []
 
     def match_phrase(self, message):

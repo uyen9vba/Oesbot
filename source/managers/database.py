@@ -1,30 +1,27 @@
-import logging
 
 import psycopg2
 import contextlib
 import sqlalchemy
 
+
 class DatabaseManager:
-    @staticmethod
-    def __init__(url):
+    def __init__(self, url):
         self.engine = sqlalchemy.create_engine(url, pool_pre_ping=True, pool_size=10, max_overflow=20)
         self.session = sqlalchemy.orm.sessionmaker(bind=self.engine, autoflush=False)
-        self.scoped_session= sqlalchemy.orm.scoped_session(sql.alchemy.orm.sessionmaker(bing=self.engine))
+        self.scoped_session= sqlalchemy.orm.scoped_session(sqlalchemy.orm.sessionmaker(bing=self.engine))
 
-    @staticmethod
-    def create_session(**options):
+    def session(self, **options):
         return self.session(**options)
 
-    @staticmethod
-    def create_scoped_session(*options):
+    def scoped_session(self, **options):
         return self.scoped_session(**options)
 
     @staticmethod
-    def session_add_expunge(db_object, **options):
+    def session_add_expunge(self, db_object, **options):
         if "expire_on_commit" not in options:
             options["expire_on_commit"] = False 
 
-        session = self.create_session(**options)
+        session = self.session(**options)
 
         try:
             session.add(db_object)
@@ -38,7 +35,7 @@ class DatabaseManager:
 
     @staticmethod
     @contextlib.contextmanager
-    def create_dbapi_connection(autocommit=False):
+    def create_dbapi_connection(self, autocommit=False):
         pool_connection = self.engine.raw_connection()
 
         connection = pool_connection.connection

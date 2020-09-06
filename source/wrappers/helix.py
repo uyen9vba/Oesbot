@@ -13,22 +13,22 @@ import utilities.logger
 
 
 class HelixWrapper:
-    def __init__(self, url, config, RedisWrapper=None):
+    def __init__(self, url, config, RedisWrapper=None, ClientAuth=None):
         self.url = url
         self.config = config
         self.redis_wrapper = RedisWrapper
-        self.session = requests.Session()
-        self.timeout = 20
+        self.client_auth = ClientAuth
 
     def get_userdata_by_login(self, login):
         key = f"api:twitch:helix:user:by-login:{login}"
         value = self.redis_wrapper.get_value(key)
 
         if value is None:
-            value = self.session.request(
+            value = HTTPManager.request(
                 method="GET",
                 url=self.url + "/users",
-                params={"login": login}
+                params={"login": login},
+                headers={"Client-ID": self.client_auth.client_id}
             ).json()
             #value = HTTPManager.get(self.url, "/users", {"login": login}).json()
             self.redis_wrapper.cache(key=key, value=value, expiry=30)
@@ -40,7 +40,12 @@ class HelixWrapper:
         value = self.redis_wrapper.get_value(key)
 
         if value is None:
-            value = HTTPManager.get("/users", self.url, {"id": id_}).json()
+            value = self.session.request(
+                method="GET",
+                url=self.url + "/users",
+                params={"id": id_}
+            ).json()
+            #value = HTTPManager.get("/users", self.url, {"id": id_}).json()
             self.redis_wrapper.cache(key=key, value=value, expiry=30)
 
         return value
@@ -160,28 +165,3 @@ class HelixWrapper:
                 break
 
         return responses
-
-    def request(self, method, endpoint, params, headers, auth=None, json=None):
-        if isinstance(auth, ClientAuth):
-            auth_headers = {"Client-ID": auth.client_id}
-        else:
-            auth_headers = {}
-
-        if headers is None:
-            headers = auth_headers
-        else:
-            headers = {**headers, **auth_headers}
-
-        try:
-            return HTTPManager.request(method, self.url, endpoint, params, headers, json)
-        except requests.HTTPError as a:
-            if (a.response_status_code == 401 and "WWW-Authenticate" in a.response_headers):
-                return HTTPManager.request(method, self.url, endpoint, params, headers, json)
-            elif a.response_status_code == 429:
-                rate_limit_reset = datetime.datetime.fromtimestamp(int(a.response_headers["Ratelimit-Reset"]), tz.timezone.utc)
-                time_to_wait = rate_limit_reset - datetime.datetime.utcnow()
-
-                time.sleep(math.ceil(time_to_wait.total_seconds()))
-                return HTTPManager.request(method, self.url, endpoint, params, headers, auth, json)
-            else:
-                raise a

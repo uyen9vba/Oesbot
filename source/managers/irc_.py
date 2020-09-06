@@ -23,24 +23,15 @@ class IRCManager:
 
         try:
             self.create_connection()
-            phrases = {
-                "name": self.bot.config.get("name"), 
-                "version": self.bot.config.get("version")
-            }
-
-            self.message(
-                self.bot.config.get("channel"), 
-                {"name": self.bot.config.get("name"), 
-                "version": self.bot.config.get("version")}
-            )
+            
         except:
             logger.exception("Failed to open connection. Retrying")
             
             self.bot.scheduler.execute_delayed(delay=2, method=IRCManager(self.bot))
 
-        reactor.add_global_handler("welcome", self.on_welcome)
-        reactor.add_global_handler("all_event", self.on_dispatch, -10)
-        reactor.add_global_handler("disconnect", self.on_disconnect)
+        self.reactor.add_global_handler("welcome", self.on_welcome)
+        self.reactor.add_global_handler("all_event", self.on_dispatch, -10)
+        self.reactor.add_global_handler("disconnect", self.on_disconnect)
 
     def message(self, channel, message, whisper=False):
         if self.ping_task is None and not self.can_send():
@@ -108,6 +99,11 @@ class IRCManager:
         logger.info("Successfully connected IRC")
         ServerConnection.join(",".join(self.channels))
 
+        self.message(
+            self.bot.config.get("channel"),
+            self.bot.phrases.get("welcome"),
+        )
+
     def on_dispatch(self, ServerConnection, event):
         method = getattr(Bot, "on_" + event.type, None)
 
@@ -123,8 +119,6 @@ class IRCManager:
 
         self.ping_task.remove()
         self.ping_task = None
-
-        self.init()
 
 
 class ServerConnection(irc.client.ServerConnection):

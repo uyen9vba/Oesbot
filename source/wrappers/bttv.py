@@ -13,7 +13,10 @@ class BTTVWrapper:
         value = RedisWrapper.get_value(key)
 
         if value is None or force:
-            value = HTTPManager.get("/cached/emotes/global").json()
+            value = HTTPManager.request(
+                method="GET",
+                url=self.url + "/cached/emotes/global"
+            ).json()
             RedisWrapper.cache(key=key, value=value, expiry=60 * 60)
 
         return value
@@ -24,7 +27,11 @@ class BTTVWrapper:
 
         if value is None or force:
             try:
-                value = HTTPManager.get(["cached", "users", "twitch", login])
+                value = HTTPManager.request(
+                    method="GET",
+                    url=self.url,
+                    params=["cached", "users", "twitch", login]
+                ).json()
             except requests.HTTPError as a:
                 if a.response.status_code == 404:
                     return []
