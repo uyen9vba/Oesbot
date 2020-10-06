@@ -6,13 +6,11 @@ import urllib
 import random
 import abc
 
-from managers.scheduler import Scheduler, BackgroundScheduler
 from managers.database import DatabaseManager
 from managers.irc_ import IRCManager
 from managers.command import CommandManager
 from managers.phrase import PhraseManager
-from managers.access_token import UserAccessTokenManager
-from managers.http import HTTPManager
+from managers.access_token import AppAccessToken, AppAccessTokenManager, UserAccessTokenManager, UserAccessToken
 from wrappers.helix import HelixWrapper
 from wrappers.redis import RedisWrapper
 from utilities.client_auth import ClientAuth
@@ -29,9 +27,9 @@ class Bot:
         self.api = config["api"]
 
         self.client_auth = ClientAuth(
-            client_id=self.config.get("client_id"),
-            client_secret=self.config.get("client_secret"),
-            redirect_uri=self.config.get("redirect_uri")
+            client_id=self.twitch.get("client_id"),
+            client_secret=self.twitch.get("client_secret"),
+            redirect_uri=self.twitch.get("redirect_uri")
         )
 
         if self.config.getboolean("verified", False):
@@ -41,41 +39,59 @@ class Bot:
         else:
             self.tmi_status = TMIStatus.moderator
 
-        HTTPManager.init()
-        Scheduler.init()
-        BackgroundScheduler.init()
-
         self.database_manager = DatabaseManager(url=self.api.get("database"))
-        self.background_scheduler = BackgroundScheduler()
         self.redis_wrapper = RedisWrapper()
+
+        self.app_access_token = AppAccessToken(
+            url=self.api.get("twitch"),
+            ClientAuth=self.client_auth
+        )
+
+        self.app_access_token_manager = AppAccessTokenManager(
+            RedisWrapper=self.redis_wrapper,
+            ClientAuth=self.client_auth,
+            AccessToken=self.app_access_token
+        )
+
         self.helix_wrapper = HelixWrapper(
             url=self.api.get("helix"),
             config=self.config,
             RedisWrapper=self.redis_wrapper,
-            ClientAuth=self.client_auth
+            ClientAuth=self.client_auth,
+            AccessTokenManager=self.app_access_token_manager
         )
 
         self.bot_userdata = self.helix_wrapper.get_userdata_by_login(self.config.get("name"))
         self.channel_userdata = self.helix_wrapper.get_userdata_by_login(self.config.get("channel"))
 
-        self.token_manager = UserAccessTokenManager(
+        """
+        self.bot_access_token_manager = UserAccessTokenManager(
             RedisWrapper=self.redis_wrapper,
             username=self.config.get("name"),
-            user_id=self.bot_userdata.get("id", None)
+            user_id=self.bot_userdata["data"][0]["id"],
+            AccessToken=UserAccessToken(
+                url=self.api.get("twitch"),
+                ClientAuth=self.client_auth
+            )
         )
+        """
+
+        print(self.client_auth.client_secret)
+
+        print(self.bot_userdata)
 
         self.irc_manager = IRCManager(self)
         self.command_manager = CommandManager(self.database_manager)
         self.phrase_manager = PhraseManager(self.database_manager)
 
-        if self.channel_userdata["id"] is None:
+        if self.channel_userdata["data"][0]["id"] is None:
             raise ValueError("Config: channel name not found on https://api.twitch.tv/helix")
         
-        if self.bot_userdata["id"] is None:
+        if self.bot_userdata["data"][0]["id"] is None:
             raise ValueError("Config: bot name not found on https://api.twitch.tv/helix")
 
     def password(self):
-        return f"oauth:{self.token_manager.access_token}"
+        return f"oauth:{self.bot_access_token_manager.access_token.access_token}"
 
     def execute_delayed(self, delay, method, *args, **kwargs):
         self.scheduler.execute_after
@@ -111,5 +127,5 @@ class Bot:
             a.commit()
 
     def start(self):
-        self.irc_manager.start()
+        self.irc_manager.create_connection()
         self.irc_manager.reactor.process_forever()

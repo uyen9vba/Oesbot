@@ -5,6 +5,9 @@ import sys
 
 from bot import Bot
 from utilities.logger import *
+from managers.http import HTTPManager
+from managers.scheduler import Scheduler, BackgroundScheduler
+from managers.irc_ import IRCManager
 
 
 def run(args):
@@ -13,6 +16,10 @@ def run(args):
     if not config.read("C:/Users/Niklas/Projects/Oesbot/source/config.ini", encoding="utf-8"):
         logger.error("Config path missing")
         sys.exit(0)
+
+    HTTPManager.init()
+    Scheduler.init()
+    BackgroundScheduler.init()
 
     bot = Bot(config, args)
 

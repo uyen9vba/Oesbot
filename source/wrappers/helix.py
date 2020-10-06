@@ -3,6 +3,7 @@ import datetime
 import math
 import io
 import urllib
+import json
 
 import requests
 
@@ -13,11 +14,14 @@ import utilities.logger
 
 
 class HelixWrapper:
-    def __init__(self, url, config, RedisWrapper=None, ClientAuth=None):
+    def __init__(self, url, config, RedisWrapper, ClientAuth, AccessTokenManager):
         self.url = url
         self.config = config
         self.redis_wrapper = RedisWrapper
         self.client_auth = ClientAuth
+        self.access_token_manager = AccessTokenManager
+
+        self.authorization_prefix = "Bearer"
 
     def get_userdata_by_login(self, login):
         key = f"api:twitch:helix:user:by-login:{login}"
@@ -28,9 +32,12 @@ class HelixWrapper:
                 method="GET",
                 url=self.url + "/users",
                 params={"login": login},
-                headers={"Client-ID": self.client_auth.client_id}
+                headers={
+                    "Client-ID": self.client_auth.client_id,
+                    "Authorization": f"{self.authorization_prefix} {self.access_token_manager.access_token.access_token}"
+                }
             ).json()
-            #value = HTTPManager.get(self.url, "/users", {"login": login}).json()
+            
             self.redis_wrapper.cache(key=key, value=value, expiry=30)
 
         return value

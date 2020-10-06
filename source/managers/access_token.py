@@ -1,16 +1,18 @@
 import datetime
 import abc
+import json
 
 import wrappers.redis
+from managers.http import HTTPManager
 
 
 class AccessTokenManager():
-    def __init__(self, RedisWrapper, key, expire=True, AccessToken=None):
+    def __init__(self, RedisWrapper, key, AccessToken=None, expire=True):
         self.redis_wrapper = RedisWrapper
         self.key = key
-        self.expire = expire
         self.access_token = AccessToken
-
+        self.expire = expire
+        
     def refresh(self):
         logger.debug("Refreshing OAuth token")
         new_token = self.token.refresh()
@@ -34,15 +36,14 @@ class AccessTokenManager():
 
 
 class AppAccessTokenManager(AccessTokenManager):
-    def __init__(self, RedisWrapper, ClientAuth, scope=[], AccessToken=None):
-        key = f"authentication:app-access-token:{ClientAuth.client_id}:{json.dumps(scope)}"
+    def __init__(self, RedisWrapper, ClientAuth, AccessToken):
+        key = f"authentication:app-access-token:{ClientAuth.client_id}:{json.dumps(AccessToken.scope)}"
 
         super().__init__(RedisWrapper, key, AccessToken)
-        self.scope = scope
 
 
 class UserAccessTokenManager(AccessTokenManager):
-    def __init__(self, RedisWrapper, username, user_id, AccessToken=None):
+    def __init__(self, RedisWrapper, username, user_id, AccessToken):
         key = f"authentication:user-access-token:{user_id}"
 
         super().__init__(RedisWrapper, key, AccessToken)
@@ -58,11 +59,12 @@ class AccessToken():
         self.token_type = token_type
         self.refresh_token = refresh_token
         self.scope = scope
-        self.token_refresh_threshold
-        self.url = "https://id.twitch.tv"
+
+        self.token_refresh_threshold = 0.9
+        self.expires_at = None
         
         if expires_in is not None:
-            self.expires_at = self.created_at + self.expires_in
+            self.expires_at = self.created_at + datetime.timedelta(seconds=self.expires_in)
         else:
             self.expires_at = None
 
@@ -89,7 +91,7 @@ class AccessToken():
         if self.expires_in is None:
             expires_in_ms = None
         else:
-            expires_in_ms = self.expires_in.total_seconds() * 1000
+            expires_in_ms = self.expires_in * 1000
 
         return {
             "access_token": self.access_token,
@@ -141,26 +143,27 @@ class UserAccessToken(AccessToken):
             scope=response.get("scope", [])
         )
 
-    def get(self, ClientAuth, code):
-        response = HTTPManager.post(
-            self.url,
-            "/oauth2/token",
-            {
-                "client_id": self.ClientAuth.client_id,
-                "client_secret": self.ClientAuth.client_secret,
-                "code": code,
-                "redirect_uri": self.ClientAuth.redirect_url,
-                "grant_type": "authorization_code"
+    def __init__(self, url, ClientAuth):
+        value = HTTPManager.request(
+            method="GET",
+            url=url + "/oauth2/authorize",
+            params={
+                "client_id": ClientAuth.client_id,
+                "client_secret": ClientAuth.client_secret,
+                "response_type": "token",
+                "redirect_uri": ClientAuth.redirect_uri
             }
         )
 
-        return AccessToken(
-            token=response["token"],
+        print(value)
+
+        return super().__init__(
+            access_token=value.get("access_token"),
             created_at=datetime.datetime.utcnow(),
-            expires_in=self.expires_in(response),
-            token_type=response["token_type"],
-            refresh_token=response.get("refresh_token", None),
-            scope=response.get("scope", [])
+            expires_in=value.get("expires_in"),
+            token_type=value.get("token_type"),
+            refresh_token=value.get("refresh_token"),
+            scope=value.get("scope", [])
         )
 
 
@@ -171,23 +174,23 @@ class AppAccessToken(AccessToken):
     def refresh(self):
         return self.get(self.scope)
 
-    def get(self, ClientAuth, scope=[]):
-        response = HTTPManager.post(
-            self.url,
-            "/oauth2/token",
-            {
-                "client_id": self.ClientAuth.client_id,
-                "client_secret": self.ClientAuth.client_secret,
+    def __init__(self, url, ClientAuth, scope=[]):
+        value = HTTPManager.request(
+            method="POST",
+            url=url + "/oauth2/token",
+            params={
+                "client_id": ClientAuth.client_id,
+                "client_secret": ClientAuth.client_secret,
                 "grant_type": "client_credentials",
                 "scope": (" ".join(scope))
             }
-        )
+        ).json()
 
-        return AccessToken(
-            token=response["token"],
+        super().__init__(
+            access_token=value.get("access_token"),
             created_at=datetime.datetime.utcnow(),
-            expires_in=self.expires_in(response),
-            token_type=response["token_type"],
-            refresh_token=response.get("refresh_token", None),
-            scope=response.get("scope", [])
+            expires_in=value.get("expires_in"),
+            token_type=value.get("token_type"),
+            refresh_token=value.get("refresh_token"),
+            scope=value.get("scope")
         )
