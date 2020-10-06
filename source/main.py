@@ -11,7 +11,7 @@ from managers.irc_ import IRCManager
 
 
 def run(args):
-    config = configparser.ConfigParser()
+    config = configparser.ConfigParser(interpolation=configparser.ExtendedInterpolation())
 
     if not config.read("C:/Users/Niklas/Projects/Oesbot/source/config.ini", encoding="utf-8"):
         logger.error("Config path missing")

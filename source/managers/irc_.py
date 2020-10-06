@@ -65,7 +65,7 @@ class IRCManager:
                 server="irc.chat.twitch.tv",
                 port=6697,
                 nickname=self.bot.config.get("name"),
-                password="oauth:e7t4ngyv3wlyftay1yaovo9xzgmh80",
+                password=self.bot.config.get("client_secret"),
                 username=self.bot.config.get("name"),
                 connect_factory=irc.connection.Factory(wrapper=ssl.wrap_socket)
             )
