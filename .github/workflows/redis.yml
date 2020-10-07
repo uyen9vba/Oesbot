@@ -1,7 +1,0 @@
-name: Redis Server in GitHub Actions
-  # You may pin to the exact commit or the version.
-  # uses: supercharge/redis-github-action@8dd3c86cd02fabe1bc459d55ba892a9ce91e23c6
-  uses: supercharge/redis-github-action@1.1.0
-  with:
-    # Redis version to use
-    redis-version: # optional, default is latest
