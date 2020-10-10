@@ -1,5 +1,5 @@
 name: Redis container
-on: [workflow-dispatch]:
+on: workflow_dispatch:
 
 jobs:
   # Label of the container job
