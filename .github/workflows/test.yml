@@ -36,4 +36,4 @@ jobs:
         pip install pytest
     - name: Test with pytest
       run: 
-        pytest source/main.py
+        pytest --disable-pytest-warnings source/main.py
