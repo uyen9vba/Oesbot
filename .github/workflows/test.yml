@@ -32,5 +32,11 @@ jobs:
           sudo service redis-server stop
           sudo redis-server
           
+  run:
+    runs-on: ubuntu-latest
+      
+    steps:
+      - uses: actions/checkout@master
+      
       - name: Run application
-        run: main.py
+        run: python main.py
