@@ -2,6 +2,6 @@
 name: "Oesbot"
 description: ""
 author: ""
- runs:
-  using: "docker"
-  image: "Dockerfile"
+runs:
+ using: "docker"
+ image: "Dockerfile"
