@@ -1,6 +1,6 @@
-name: "Black"
-description: "The uncompromising Python code formatter."
-author: "Łukasz Langa and contributors to Black"
+name: "Oesbot"
+description: ""
+author: ""
 branding:
   color: "black"
   icon: "check-circle"
