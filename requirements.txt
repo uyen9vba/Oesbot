@@ -8,5 +8,4 @@ APScheduler==3.6.3
 psycopg2==2.8.5
 redis==3.5.3
 tempora==4.0.0
-pytest==6.1.1
 irc==19.0.1
