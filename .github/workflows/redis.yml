@@ -1,0 +1,19 @@
+
+name: Redis container
+
+on:
+  workflow_dispatch:
+    branches: [ master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: uyen9vba/Oesbot@master
+
+      - name: Install redis
+        run: apt install redis-server
+
+      - name: Start redis-server
+        run: redis-server
