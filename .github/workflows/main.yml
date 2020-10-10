@@ -29,6 +29,3 @@ jobs:
       # Runs a set of commands using the runners shell
       - name: Run Redis server
         run: redis-server
-        
-      - name: Run application
-        run: python ./main.py
