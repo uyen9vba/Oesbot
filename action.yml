@@ -2,9 +2,6 @@
 name: "Oesbot"
 description: ""
 author: ""
-branding:
-  color: "black"
-  icon: "check-circle"
  runs:
   using: "docker"
   image: "Dockerfile"
