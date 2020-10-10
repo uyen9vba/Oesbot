@@ -28,7 +28,7 @@ jobs:
 
       # Runs a set of commands using the runners shell
       - name: Run Redis server
-        run: 
-          sudo redis-server
-          sudo service redis-server stop
+        run: |
+          sudo redis-server,
+          sudo service redis-server stop,
           sudo redis-server
