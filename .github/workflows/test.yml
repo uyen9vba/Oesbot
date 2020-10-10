@@ -31,3 +31,6 @@ jobs:
         run: |
           sudo service redis-server stop
           sudo redis-server
+          
+      - name: Run application
+        run: main.py
