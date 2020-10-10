@@ -1,12 +1,12 @@
 # This is a basic workflow to help you get started with Actions
 
-name: Redis server
+name: Main
 
 # Controls when the action will run. Triggers the workflow on push or pull request
 # events but only for the master branch
 on:
   workflow_dispatch:
-    branches: [ master ]
+    branches: master
   push:
     branches: master
 
@@ -29,3 +29,6 @@ jobs:
       # Runs a set of commands using the runners shell
       - name: Run Redis server
         run: redis-server
+        
+      - name: Run application
+        run: python ./main.py
