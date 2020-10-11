@@ -33,7 +33,7 @@ jobs:
           sudo redis-server
           
   Program:
-    needs: [Redis server]
+    needs: [Redis-server]
     runs-on: ubuntu-latest
 
     steps:
