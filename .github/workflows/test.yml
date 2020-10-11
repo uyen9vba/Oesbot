@@ -34,8 +34,7 @@ jobs:
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
     - name: Uninstall with pytest
       run: |
-        pip uninstall pytest
-        y
+        pip uninstall -U pytest
     - name: Install pytest
       run: |
         pipenv shell
