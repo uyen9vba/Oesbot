@@ -37,7 +37,6 @@ jobs:
         pip uninstall -y pytest
     - name: Install pytest
       run: |
-        pipenv shell
         pip install pytest
     - name: Test with pytest
       run: 
