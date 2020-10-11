@@ -35,5 +35,7 @@ jobs:
     - name: Test with pytest
       run: |
         pip uninstall pytest
+        y
         pipenv shell
+        pip install pytest
         pytest source/main.py
