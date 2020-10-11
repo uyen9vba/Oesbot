@@ -12,7 +12,7 @@ on:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  Redis-server:
+  Program:
     runs-on: ubuntu-latest
     
     services:
@@ -20,9 +20,6 @@ jobs:
         image: redis
         ports: 
           - 6479/tcp
-  Program:
-    needs: [Redis-server]
-    runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@master
