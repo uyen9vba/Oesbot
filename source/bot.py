@@ -99,7 +99,7 @@ class Bot:
     def parse_message(self, message, source, event, tags={}, whisper=False):
         message = message.lower()
 
-        #if not whisper and event.target == 
+        # if not whisper and event.target ==
         #
 
     def quit(self, **options):
