@@ -11,6 +11,7 @@ from managers.irc_ import IRCManager
 from managers.command import CommandManager
 from managers.phrase import PhraseManager
 from managers.access_token import AppAccessToken, AppAccessTokenManager, UserAccessTokenManager, UserAccessToken
+from managers.scheduler import Scheduler, BackgroundScheduler
 from wrappers.helix import HelixWrapper
 from wrappers.redis import RedisWrapper
 from utilities.client_auth import ClientAuth
@@ -90,11 +91,12 @@ class Bot:
         if self.bot_userdata["data"][0]["id"] is None:
             raise ValueError("Config: bot name not found on https://api.twitch.tv/helix")
 
+        for a in args:
+            if a == "build":
+                Scheduler.execute_delayed(30, self.quit)
+
     def password(self):
         return f"oauth:{self.bot_access_token_manager.access_token.access_token}"
-
-    def execute_delayed(self, delay, method, *args, **kwargs):
-        self.scheduler.execute_after
 
     def parse_message(self, message, source, event, tags={}, whisper=False):
         message = message.lower()
