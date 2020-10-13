@@ -104,7 +104,7 @@ class Bot:
         # if not whisper and event.target ==
         #
 
-    def quit(self, **options=None):
+    def quit(self, **options):
         self.commit()
 
         try:
