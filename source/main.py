@@ -12,9 +12,11 @@ from managers.irc_ import IRCManager
 
 def run(args):
     config = configparser.ConfigParser(interpolation=configparser.ExtendedInterpolation())
+    filepath = config.read(os.path.join(os.path.dirname(os.path.abspath(__file__)) + "config.ini"), encoding="utf-8")
 
-    if not config.read(os.path.join(os.path.dirname(os.path.abspath(__file__)) + "config.ini"), encoding="utf-8"):
+    if not filepath:
         logger.error("Config path missing")
+        print(os.path.join(os.path.dirname(os.path.abspath(__file__)) + "config.ini"), encoding="utf-8")
         sys.exit(0)
 
     HTTPManager.init()
