@@ -77,10 +77,6 @@ class Bot:
         )
         """
 
-        print(self.client_auth.client_secret)
-
-        print(self.bot_userdata)
-
         self.irc_manager = IRCManager(self)
         self.command_manager = CommandManager(self.database_manager)
         self.phrase_manager = PhraseManager(self.database_manager)

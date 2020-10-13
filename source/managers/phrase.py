@@ -16,6 +16,8 @@ class PhraseManager:
             
         return False
 
+    def commit(self):
+        self.database_session.commit()
 
 
 class Phrase(declarative_meta):

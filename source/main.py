@@ -26,7 +26,7 @@ def main(args):
 
     if args.build:
         print("Build mode: shutting down in 30...")
-        Scheduler.execute_delayed(delay=30, method=lambda: self.quit())
+        Scheduler.execute_delayed(delay=30, method=lambda: bot.quit())
 
     bot.start()
 
