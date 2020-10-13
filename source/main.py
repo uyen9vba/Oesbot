@@ -13,7 +13,7 @@ from managers.irc_ import IRCManager
 def run(args):
     config = configparser.ConfigParser(interpolation=configparser.ExtendedInterpolation())
 
-    if not config.read(os.path.dirname(os.path.abspath(__file__)) + "\config.ini", encoding="utf-8"):
+    if not config.read(os.path.dirname(os.path.abspath(__file__)) + "/config.ini", encoding="utf-8"):
         logger.error("Config path missing")
         sys.exit(0)
 
