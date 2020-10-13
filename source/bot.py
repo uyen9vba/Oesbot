@@ -123,8 +123,10 @@ class Bot:
         sys.exit(0)
 
     def commit(self):
+        '''
         for key, a in self.command_manager.commands:
             a.commit()
+        '''
 
         for key, a in self.phrase_manager.phrases:
             a.commit()
