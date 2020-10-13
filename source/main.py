@@ -16,7 +16,7 @@ def run(args):
 
     if not filepath:
         logger.error("Config path missing")
-        print(os.path.join(os.path.dirname(os.path.abspath(__file__)) + "config.ini"), encoding="utf-8")
+        print(os.path.join(os.path.dirname(os.path.abspath(__file__)) + "config.ini"))
         sys.exit(0)
 
     HTTPManager.init()
