@@ -91,7 +91,7 @@ class Bot:
         if self.bot_userdata["data"][0]["id"] is None:
             raise ValueError("Config: bot name not found on https://api.twitch.tv/helix")
 
-        if args[1]:
+        if args.build:
             Scheduler.execute_delayed(30, self.quit)
 
     def password(self):
