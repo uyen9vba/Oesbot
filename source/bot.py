@@ -116,7 +116,7 @@ class Bot:
 
         try:
             for a in self.phrases["quit"]:
-                self.irc_manager.message(self.channel, a)
+                self.irc_manager.message(self.config.get("channel"), a)
         except:
             logger.exception("Exception caught while trying to message quit phrase")
             
