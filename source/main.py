@@ -23,9 +23,13 @@ def main(args):
     BackgroundScheduler.init()
 
     bot = Bot(config, args)
-    print(args)
 
     bot.start()
+
+    if args.build:
+        print("Build mode: shutting down in 30...")
+        bot.quit()
+        Scheduler.execute_delayed(delay=30, method=lambda: self.quit())
 
 
 if __name__ == "__main__":
@@ -34,7 +38,6 @@ if __name__ == "__main__":
 
     args_parser.add_argument("-build", action="store_true")
     args = args_parser.parse_args()
-    print(args)
 
     debug()
 

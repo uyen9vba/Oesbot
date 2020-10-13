@@ -26,12 +26,15 @@ class IRCManager:
         self.reactor.add_global_handler(event="disconnect", handler=self.on_disconnect)
 
     def message(self, channel, message, whisper=False):
-        if self.ping_task is None and not self.can_send():
-            logger.error("TMI rate limit was reached. Retrying")
-            Scheduler.execute_delayed(
-                delay=2,
-                method=lambda: self.message(channel, message, whisper)
-            )
+        if self.ping_task is None:
+            logger.error("Ping task not found")
+            
+            if not self.can_send():
+                logger.error("TMI rate limit was reached. Retrying")
+                Scheduler.execute_delayed(
+                    delay=2,
+                    method=lambda: self.message(channel, message, whisper)
+                )
 
             return
 
