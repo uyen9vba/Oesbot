@@ -92,6 +92,7 @@ class Bot:
             raise ValueError("Config: bot name not found on https://api.twitch.tv/helix")
 
         if args.build:
+            print("Build mode: shutting down in 30...")
             Scheduler.execute_delayed(30, self.quit)
 
     def password(self):
