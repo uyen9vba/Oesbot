@@ -24,12 +24,11 @@ def main(args):
 
     bot = Bot(config, args)
 
-    bot.start()
-
     if args.build:
         print("Build mode: shutting down in 30...")
-        bot.quit()
         Scheduler.execute_delayed(delay=30, method=lambda: self.quit())
+
+    bot.start()
 
 
 if __name__ == "__main__":
