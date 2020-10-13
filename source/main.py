@@ -10,7 +10,7 @@ from managers.scheduler import Scheduler, BackgroundScheduler
 from managers.irc_ import IRCManager
 
 
-def run(args):
+def main(args):
     config = configparser.ConfigParser(interpolation=configparser.ExtendedInterpolation())
     filepath = config.read(os.path.join(os.path.dirname(os.path.abspath(__file__)), "config.ini"), encoding="utf-8")
 
@@ -23,6 +23,7 @@ def run(args):
     BackgroundScheduler.init()
 
     bot = Bot(config, args)
+    print(args)
 
     bot.start()
 
@@ -32,8 +33,9 @@ if __name__ == "__main__":
     args_parser.add_argument("--config", "-c", default="config.ini", help="Choose config (default: config.ini)")
 
     args_parser.add_argument("--build")
-    args = args_parser.parse_known_args()
+    args = args_parser.parse_args()
+    print(args)
 
     debug()
 
-    run(args)
+    main(args)
