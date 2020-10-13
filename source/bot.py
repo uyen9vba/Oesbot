@@ -33,6 +33,10 @@ class Bot:
             redirect_uri=self.twitch.get("redirect_uri")
         )
 
+        if args.build:
+            print("Build mode: shutting down in 30...")
+            Scheduler.execute_delayed(30, self.quit)
+
         if self.config.getboolean("verified", False):
             self.tmi_status = TMIStatus.verified
         elif self.config.getboolean("known", False):
@@ -90,10 +94,6 @@ class Bot:
         
         if self.bot_userdata["data"][0]["id"] is None:
             raise ValueError("Config: bot name not found on https://api.twitch.tv/helix")
-
-        if args.build:
-            print("Build mode: shutting down in 30...")
-            BackgroundScheduler.execute_delayed(30, self.quit)
 
     def password(self):
         return f"oauth:{self.bot_access_token_manager.access_token.access_token}"
