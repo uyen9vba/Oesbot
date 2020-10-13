@@ -8,7 +8,7 @@ class DatabaseManager:
     def __init__(self, url):
         self.engine = sqlalchemy.create_engine(url, pool_pre_ping=True, pool_size=10, max_overflow=20)
         self.session = sqlalchemy.orm.sessionmaker(bind=self.engine, autoflush=False)
-        self.scoped_session= sqlalchemy.orm.scoped_session(sqlalchemy.orm.sessionmaker(bing=self.engine))
+        self.scoped_session = sqlalchemy.orm.scoped_session(sqlalchemy.orm.sessionmaker(bing=self.engine))
 
     def session(self, **options):
         return self.session(**options)
