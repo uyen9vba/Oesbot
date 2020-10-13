@@ -114,13 +114,14 @@ class Bot:
         sys.exit(0)
 
     def commit(self):
+        pass
         '''
         for key, a in self.command_manager.commands:
             a.commit()
-        '''
 
         for key, a in self.phrase_manager.phrases:
             a.commit()
+        '''
 
     def start(self):
         self.irc_manager.create_connection()
