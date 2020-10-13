@@ -32,7 +32,7 @@ if __name__ == "__main__":
     args_parser = argparse.ArgumentParser()
     args_parser.add_argument("-config", default="config.ini", help="Choose config (default: config.ini)")
 
-    args_parser.add_argument("build", action="store_true")
+    args_parser.add_argument("-build", action="store_true")
     args = args_parser.parse_args()
     print(args)
 
