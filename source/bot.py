@@ -11,7 +11,6 @@ from managers.irc_ import IRCManager
 from managers.command import CommandManager
 from managers.phrase import PhraseManager
 from managers.access_token import AppAccessToken, AppAccessTokenManager, UserAccessTokenManager, UserAccessToken
-from managers.scheduler import Scheduler, BackgroundScheduler
 from wrappers.helix import HelixWrapper
 from wrappers.redis import RedisWrapper
 from utilities.client_auth import ClientAuth
