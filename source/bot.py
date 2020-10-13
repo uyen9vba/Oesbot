@@ -93,7 +93,7 @@ class Bot:
 
         if args.build:
             print("Build mode: shutting down in 30...")
-            Scheduler.execute_delayed(30, self.quit)
+            BackgroundScheduler.execute_delayed(30, self.quit)
 
     def password(self):
         return f"oauth:{self.bot_access_token_manager.access_token.access_token}"
@@ -104,7 +104,7 @@ class Bot:
         # if not whisper and event.target ==
         #
 
-    def quit(self, **options):
+    def quit(self, **options=None):
         self.commit()
 
         try:
